@@ -28,8 +28,10 @@ async def on_message(message):
         
     if message.content == "$why":
         logger.info("{0.author} asked why the hell this even exsits".format(message))
-        await message.channel.send("Fuck you, that's why <3\n\
-                                    Built with love and too much time")
+        await message.channel.send(
+            "Fuck you, that's why <3\n\
+            Built with love and too much time"
+        )
         
     elif message.content == "$pour":
         logger.info("{0.author} attempted to pour {1.user} shot".format(message, client))
