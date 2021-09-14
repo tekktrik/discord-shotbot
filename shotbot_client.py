@@ -31,9 +31,13 @@ async def on_message(message):
         await message.channel.send("Fuck you, that's why")
         
     elif message.content == "$pour":
-        logger.info("{0.author} attempted to pour a shot".format(message))
+        logger.info("{0.author} attempted to pour {1.user} shot".format(message, client))
         # pour a shot glass
         
     elif message.content == "$punish":
-        logger.info("{0.author} attempted to hand out punishment, what a jerk".format(message))
+        logger.info("{0.author} attempted to punish {1.user}, what a jerk".format(message, client))
         # pour all glasses
+        
+    elif message.content.startswith("$"):
+        logger.info("{0.author} seemingly tried to use an invalid command".format(message))
+        
