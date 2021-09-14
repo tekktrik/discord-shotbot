@@ -124,7 +124,7 @@ async def on_message(message):
             logger.info("Time remaining for single pour: {}".format(single_remaining_str))
             logger.info("Time remaining for full pour: {}".format(fill_remaining_str))
             choose_time_remaining = single_remaining_str if is_pour_command else fill_remaining_str
-            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1.user} still has about {3} left before you can do that!".format(message, client, choose_time_remaining))
+            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1.user} still has about {2} left before you can do that!".format(message, client, choose_time_remaining))
             return
             
         if command_timer.isUserLockSet():
