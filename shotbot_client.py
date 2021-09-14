@@ -17,7 +17,7 @@ command_list = {
 
 @client.event
 async def on_ready():
-    logger.info("Logging in successfully as {0.user}, ready to go!")
+    logger.info("Logging in successfully as {0.user}, ready to go!".format(client))
     # send message that bot is ready
     
 @client.event
@@ -26,7 +26,14 @@ async def on_message(message):
     if message.author == client.user:
         return
         
-    if message.content.startswith("$why")
+    if message.content == "$why":
+        logger.info("{0.author} asked why the hell this even exsits".format(message))
         await message.channel.send("Fuck you, that's why")
         
-    
+    elif message.content == "$pour":
+        logger.info("{0.author} attempted to pour a shot".format(message))
+        # pour a shot glass
+        
+    elif message.content == "$punish":
+        logger.info("{0.author} attempted to hand out punishment, what a jerk".format(message))
+        # pour all glasses
