@@ -2,7 +2,9 @@ import discord
 import logging
 import os
 import time
+import asyncio
 from dotenv import load_dotenv
+from CommandTimer import CommandTimer
 
 client = discord.Client()
 logger = logging.getLogger('shotbot_client')
@@ -17,15 +19,13 @@ logger.debug("Used load_dotenv() to load environment")
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_NAME = os.getenv('GUILD_NAME')
 SPECIFIED_CHANNEL_NAME = os.getenv('SPECIFIED_CHANNEL_NAME')
-SHOT_RECIPIENT_ID = os.getenv("SHOT_RECIPIENT_ID")
+SHOT_RECIPIENT_ID = int(os.getenv("SHOT_RECIPIENT_ID"))
 
 logger.debug("DISCORD_TOKEN: {0}".format(DISCORD_TOKEN))
 logger.debug("GUILD_NAME: {0}".format(GUILD_NAME))
 logger.debug("SPECIFIED_CHANNEL_NAME: {0}".format(SPECIFIED_CHANNEL_NAME))
 logger.debug("SHOT_RECIPIENT_ID: {0}".format(SHOT_RECIPIENT_ID))
-
-shot_recepient = client.fetch_user(SHOT_RECIPIENT_ID)
-logger.info("User to be referenced based on SHOT_RECIPIENT_ID: {0}".format(shot_recepient))
+#logger.debug("type(SHOT_RECIPIENT_ID) = {0}".format(type(SHOT_RECIPIENT_ID))
 
 command_prefix = "$"
 
@@ -36,65 +36,26 @@ command_list = {
     "fill":     "punish"
 }
 
-def getCommandFor(input_string):
+command_timer = CommandTimer()
+
+async def getShotRecipient():
+    return await client.fetch_user(SHOT_RECIPIENT_ID)
+
+async def getCommandFor(input_string):
     return command_prefix+command_list[input_string]
 
-command_help = {
-    getCommandFor("help"): "Display help regarding Discord-ShotBot (That's this)",
-    getCommandFor("about"): "Why was an abomination like me created?",
-    getCommandFor("pour"): "Pour {0.name} a glass".format(shot_recepient),
-    getCommandFor("fill"): "{0.name} won't learn otherwise".format(shot_recepient)
-}
-
-class CommandTimer:
-    
-    def __init__(self, single_lockout=10, fill_lockout=60):
-    
-        self._single_lockout_sec = single_lockout*60
-        self._fill_lockout_sec = fill_lockout*60
-        self._single_unlock_time = time.time()
-        self._fill_unlock_time = time.time()
-        self._in_progress_lock = False
-        self._user_lock = False
-        
-    def isSingleTimerReady(self):
-        return True if (time.time() >= self._single_unlock_time) else False
-        
-    def isFillTimerReady(self):
-        return True if (time.time() >= self._fill_unlock_time) else False
-        
-    def resetTimers(self):
-        self._single_unlock_time = time.time() + self._single_lockout_sec
-        self._fill_unlock_time = time.time() + self._fill_lockout_sec
-        
-    def getTimerTimeRemaining(self):
-        single_time_remain = self._single_unlock_time - time.time()
-        fill_time_remain = self._fill_unlock_time - time.time()
-        return single_time_remain, fill_time_remain
-        
-    def setInProgress(self):
-        self._in_progress_lock = True
-        
-    def markProgressComplete(self):
-        self._in_progress_lock = False
-        
-    def isInProgress(self):
-        return self._in_progress_lock
-        
-    def setUserLockOn(self):
-        self._user_lock = True
-        
-    def setUserLockOff(self):
-        self._user_lock = False
-        
-    def isUserLockSet(self):
-        return self._user_lock
-        
-command_timer = CommandTimer()
+async def getCommandHelp():
+    return {
+        await getCommandFor("help"): "Display help regarding Discord-ShotBot (That's this)",
+        await getCommandFor("about"): "Why was an abomination like me created?",
+        await getCommandFor("pour"): "Pour {0.name} a glass".format(await getShotRecipient()),
+        await getCommandFor("fill"): "{0.name} won't learn otherwise".format(await getShotRecipient())
+    }
 
 @client.event
 async def on_ready():
-    logger.info("Logging in successfully as {0.name}, ready to go!".format(client))
+    print(dir(client))
+    logger.info("Logging in successfully as {0.user}, ready to go!".format(client))
     # send message that bot is ready
     
 @client.event
@@ -112,10 +73,10 @@ async def on_message(message):
     if message.channel.name != SPECIFIED_CHANNEL_NAME:
         return
         
-    is_pour_command = (message.content == getCommandFor("pour"))
-    is_fill_command = (message.content == getCommandFor("fill"))
+    is_pour_command = (message.content == await getCommandFor("pour"))
+    is_fill_command = (message.content == await getCommandFor("fill"))
         
-    if message.content == getCommandFor("about"):
+    if message.content == await getCommandFor("about"):
         logger.info("{0.author} asked why the hell this even exsits".format(message))
         await message.channel.send("Fuck you, that's why <3\nBuilt with love and too much time")
         
@@ -123,34 +84,47 @@ async def on_message(message):
     elif (is_pour_command or is_fill_command):
         logger.debug("Pouring command registered")
         
-        if command_timer.isInProgress():
+        if (is_pour_command and not command_timer.isSingleTimerReady()) or (is_fill_command and not command_timer.isFillTimerReady()):
             single_timer_remaining, fill_timer_remaining = command_timer.getTimerTimeRemaining()
+            # fix time printing formatting
             single_remaining_str = str(int(single_timer_remaining))+":"+str(round((single_timer_remaining-int(single_timer_remaining))*60))
             fill_remaining_str = str(int(fill_timer_remaining))+":"+str(round((fill_timer_remaining-int(fill_timer_remaining))*60))
-            logger.info("Damn, {0.author} really wanted to make {1.name} drink, but the timer isn't up!".format(message, shot_recepient))
-            logger.info("Time remaining for single pour: {}".format(single_remaining_str))
-            logger.info("Time remaining for full pour: {}".format(fill_remaining_str))
+            logger.info("Damn, {0.author} really wanted to make {1} drink, but the timer isn't up!".format(message, await getShotRecipient()))
+            logger.info("Time remaining for single pour: {0}".format(single_remaining_str))
+            logger.info("Time remaining for full pour: {0}".format(fill_remaining_str))
             choose_time_remaining = single_remaining_str if is_pour_command else fill_remaining_str
-            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1.name} still has about {2} left before you can do that!".format(message, shot_recepient, choose_time_remaining))
+            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1} still has about {2} left before you can do that!".format(message, await getShotRecipient(), choose_time_remaining))
             return
+            
+        if command_timer.isInProgress():
+            logger.info("Haha, {0.author} wanted to pour {1} a shit, but ShotBot is still working on the last command".format(message, await getShotRecipient()))
+            await message.channel.send("Slow down there, {0.author} - I'm still working on pouring the last drink for {1}!".format(message, await getShotRecipient()))
             
         if command_timer.isUserLockSet():
             logger.info("User lockout is set, will not pour shot(s)")
-            await message.channel.send("Sorry, {0.author}!  Looks like {1.name} isn't ready for another one yet!".format(message, shot_recepient))
+            await message.channel.send("Sorry, {0.author}!  Looks like {1} isn't ready for another one yet!".format(message, await getShotRecipient()))
             return
+            
+        command_timer.setInProgress()
         
         if is_pour_command:
-            logger.info("{0.author} attempted to pour {1.name} shot".format(message, shot_recepient))
+            logger.info("{0.author} attempted to pour {1} shot".format(message, await getShotRecipient()))
+            command_timer.resetTimers()
             # pour a shot glass
             
         else:
-            logger.info("{0.author} attempted to punish {1.name}, what a jerk".format(message, shot_recepient))
+            logger.info("{0.author} attempted to punish {1}, what a jerk".format(message, await getShotRecipient()))
             # pour all glasses
+            
+        command_timer.markProgressComplete()
+        command_timer.resetTimers()
         
-    elif message.content == getCommandFor("help"):
+    elif message.content == await getCommandFor("help"):
         logger.info("{0.author} asked for help".format(message))
         help_message = ""
-        for command, help_text in command_help.items():
+        help_dict = await getCommandHelp()
+        print(help_dict)
+        for command, help_text in help_dict.items():
             help_message += "".join([command, ": ", help_text, "\n"])
         help_message += "".join(["\n", "Created by Tekktrik using Python"])
         await message.channel.send(help_message)
