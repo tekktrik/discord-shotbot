@@ -36,7 +36,7 @@ def getCommandFor(input_string):
 
 command_help = {
     getCommandFor("help"): "Display help regarding Discord-ShotBot (That's this)",
-    getCommandFor("about"]): "Why was an abomination like me created?",
+    getCommandFor("about"): "Why was an abomination like me created?",
     getCommandFor("pour"): "Pour {0.user} a glass".format(client),
     getCommandFor("fill"): "{0.user} won't learn otherwise".format(client)
 }
