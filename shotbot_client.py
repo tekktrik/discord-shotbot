@@ -17,10 +17,15 @@ logger.debug("Used load_dotenv() to load environment")
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_NAME = os.getenv('GUILD_NAME')
 SPECIFIED_CHANNEL_NAME = os.getenv('SPECIFIED_CHANNEL_NAME')
+SHOT_RECIPIENT_ID = os.getenv("SHOT_RECIPIENT_ID")
 
 logger.debug("DISCORD_TOKEN: {0}".format(DISCORD_TOKEN))
 logger.debug("GUILD_NAME: {0}".format(GUILD_NAME))
 logger.debug("SPECIFIED_CHANNEL_NAME: {0}".format(SPECIFIED_CHANNEL_NAME))
+logger.debug("SHOT_RECIPIENT_ID: {0}".format(SHOT_RECIPIENT_ID))
+
+shot_recepient = client.fetch_user(SHOT_RECIPIENT_ID)
+logger.info("User to be referenced based on SHOT_RECIPIENT_ID: {0}".format(shot_recepient))
 
 command_prefix = "$"
 
@@ -37,8 +42,8 @@ def getCommandFor(input_string):
 command_help = {
     getCommandFor("help"): "Display help regarding Discord-ShotBot (That's this)",
     getCommandFor("about"): "Why was an abomination like me created?",
-    getCommandFor("pour"): "Pour {0.user} a glass".format(client),
-    getCommandFor("fill"): "{0.user} won't learn otherwise".format(client)
+    getCommandFor("pour"): "Pour {0.user} a glass".format(shot_recepient),
+    getCommandFor("fill"): "{0.user} won't learn otherwise".format(shot_recepient)
 }
 
 class CommandTimer:
@@ -122,24 +127,24 @@ async def on_message(message):
             single_timer_remaining, fill_timer_remaining = command_timer.getTimerTimeRemaining()
             single_remaining_str = str(int(single_timer_remaining))+":"+str(round((single_timer_remaining-int(single_timer_remaining))*60))
             fill_remaining_str = str(int(fill_timer_remaining))+":"+str(round((fill_timer_remaining-int(fill_timer_remaining))*60))
-            logger.info("Damn, {0.author} really wanted to make {1.user} drink, but the timer isn't up!".format(message, client))
+            logger.info("Damn, {0.author} really wanted to make {1.user} drink, but the timer isn't up!".format(message, shot_recepient))
             logger.info("Time remaining for single pour: {}".format(single_remaining_str))
             logger.info("Time remaining for full pour: {}".format(fill_remaining_str))
             choose_time_remaining = single_remaining_str if is_pour_command else fill_remaining_str
-            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1.user} still has about {2} left before you can do that!".format(message, client, choose_time_remaining))
+            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1.user} still has about {2} left before you can do that!".format(message, shot_recepient, choose_time_remaining))
             return
             
         if command_timer.isUserLockSet():
             logger.info("User lockout is set, will not pour shot(s)")
-            await message.channel.send("Sorry, {0.author}!  Looks like {1.user} isn't ready for another one yet!".format(message, client))
+            await message.channel.send("Sorry, {0.author}!  Looks like {1.user} isn't ready for another one yet!".format(message, shot_recepient))
             return
         
         if is_pour_command:
-            logger.info("{0.author} attempted to pour {1.user} shot".format(message, client))
+            logger.info("{0.author} attempted to pour {1.user} shot".format(message, shot_recepient))
             # pour a shot glass
             
         else:
-            logger.info("{0.author} attempted to punish {1.user}, what a jerk".format(message, client))
+            logger.info("{0.author} attempted to punish {1.user}, what a jerk".format(message, shot_recepient))
             # pour all glasses
         
     elif message.content == getCommandFor("help"):
