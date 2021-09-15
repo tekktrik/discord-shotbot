@@ -118,7 +118,7 @@ async def on_message(message):
     if message.content == getCommandFor("about"):
         logger.info("{0.author} asked why the hell this even exsits".format(message))
         await message.channel.send("Fuck you, that's why <3\nBuilt with love and too much time")
-        )
+        
     
     elif (is_pour_command or is_fill_command):
         logger.debug("Pouring command registered")
