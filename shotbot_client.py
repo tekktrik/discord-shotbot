@@ -149,7 +149,7 @@ async def on_message(message):
         help_message = ""
         for command, help_text in command_help.items():
             help_message += "".join(command, ": ", help_text, "\n")
-        help_message += "".join("\n", "Created by Tekktrik using Python")
+        help_message += "".join(["\n", "Created by Tekktrik using Python"])
         await message.channel.send(help_message)
         
     elif message.content.startswith(command_prefix):
