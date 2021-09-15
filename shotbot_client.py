@@ -86,9 +86,12 @@ async def on_message(message):
         
         if (is_pour_command and not command_timer.isSingleTimerReady()) or (is_fill_command and not command_timer.isFillTimerReady()):
             single_timer_remaining, fill_timer_remaining = command_timer.getTimerTimeRemaining()
-            # fix time printing formatting
-            single_remaining_str = str(int(single_timer_remaining))+":"+str(round((single_timer_remaining-int(single_timer_remaining))*60))
-            fill_remaining_str = str(int(fill_timer_remaining))+":"+str(round((fill_timer_remaining-int(fill_timer_remaining))*60))
+            single_remaining_str_min = str(int(single_timer_remaining))
+            single_remaining_str_sec = "{:02d}".format(int(round((single_timer_remaining-int(single_timer_remaining))*60)))
+            single_remaining_str = single_remaining_str_min + ":" single_remaining_str_sec
+            fill_remaining_str_min = str(int(fill_timer_remaining))
+            fill_remaining_str_sec = "{:02d}".format(int(round((fill_timer_remaining-int(fill_timer_remaining))*60)))
+            fill_remaining_str = fill_remaining_str_min + ":" fill_remaining_str_sec
             logger.info("Damn, {0.author} really wanted to make {1} drink, but the timer isn't up!".format(message, await getShotRecipient()))
             logger.info("Time remaining for single pour: {0}".format(single_remaining_str))
             logger.info("Time remaining for full pour: {0}".format(fill_remaining_str))
