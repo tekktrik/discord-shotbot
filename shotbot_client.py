@@ -35,10 +35,10 @@ def getCommandFor(input_string):
     return command_prefix+command_list[input_string]
 
 command_help = {
-    getCommandFor(command_list["help"]: "Display help regarding Discord-ShotBot (That's this)",
-    getCommandFor(command_list["about"]: "Why was an abomination like me created?",
-    getCommandFor(command_list["pour"]: "Pour {0.user} a glass".format(client),
-    getCommandFor(command_list["fill"]: "{0.user} won't learn otherwise".format(client)
+    getCommandFor(command_list["help"]): "Display help regarding Discord-ShotBot (That's this)",
+    getCommandFor(command_list["about"]): "Why was an abomination like me created?",
+    getCommandFor(command_list["pour"]): "Pour {0.user} a glass".format(client),
+    getCommandFor(command_list["fill"]): "{0.user} won't learn otherwise".format(client)
 }
 
 class CommandTimer:
