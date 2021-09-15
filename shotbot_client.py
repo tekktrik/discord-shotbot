@@ -18,13 +18,17 @@ DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_NAME = os.getenv('GUILD_NAME')
 SPECIFIED_CHANNEL_NAME = os.getenv('SPECIFIED_CHANNEL_NAME')
 
+logger.debug("DISCORD_TOKEN: {0}".format(DISCORD_TOKEN))
+logger.debug("GUILD_NAME: {0}".format(GUILD_NAME))
+logger.debug("SPECIFIED_CHANNEL_NAME: {0}".format(SPECIFIED_CHANNEL_NAME))
+
 command_prefix = "$"
 
 command_list = {
-    "help": "help",
-    "about": "why",
-    "pour": "pour",
-    "fill": "punish"
+    "help":     "help",
+    "about":    "why",
+    "pour":     "pour",
+    "fill":     "punish"
 }
 
 def getCommandFor(input_string):
