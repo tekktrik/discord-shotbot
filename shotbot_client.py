@@ -25,7 +25,6 @@ logger.debug("DISCORD_TOKEN: {0}".format(DISCORD_TOKEN))
 logger.debug("GUILD_NAME: {0}".format(GUILD_NAME))
 logger.debug("SPECIFIED_CHANNEL_NAME: {0}".format(SPECIFIED_CHANNEL_NAME))
 logger.debug("SHOT_RECIPIENT_ID: {0}".format(SHOT_RECIPIENT_ID))
-#logger.debug("type(SHOT_RECIPIENT_ID) = {0}".format(type(SHOT_RECIPIENT_ID))
 
 command_prefix = "$"
 
@@ -112,7 +111,6 @@ async def on_message(message):
         
         if is_pour_command:
             logger.info("{0.author} attempted to pour {1} shot".format(message, await getShotRecipient()))
-            command_timer.resetTimers()
             # pour a shot glass
             
         else:
