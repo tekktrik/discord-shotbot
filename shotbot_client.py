@@ -32,7 +32,8 @@ command_list = {
     "help":     "help",
     "about":    "why",
     "pour":     "pour",
-    "fill":     "punish"
+    "fill":     "punish",
+    "shutdown": "mercy"
 }
 
 command_timer = CommandTimer()
@@ -53,9 +54,14 @@ async def getCommandHelp():
 
 @client.event
 async def on_ready():
-    print(dir(client))
     logger.info("Logging in successfully as {0.user}, ready to go!".format(client))
-    # send message that bot is ready
+    for guild in client.guilds:
+        if guild.name == GUILD_NAME:
+            for channel in guild.channels:
+                if channel.name == SPECIFIED_CHANNEL_NAME:
+                    await channel.send("Hello, humans!  I am Discord-ShotBot², and I am here to ruin {0.name}'s day!".format(await getShotRecipient()))
+                    break
+            break
     
 @client.event
 async def on_message(message):
@@ -65,7 +71,7 @@ async def on_message(message):
         
     # Only work with messages from the specified server
     if message.guild.name != GUILD_NAME:
-        logger.debug("Logged message from {0.author} from server \"{0.guild.name}\" ({0.guild.id}): {0.content}".format(message))
+        logger.debug("Logged message as {0.author} from server \"{0.guild.name}\" ({0.guild.id}): {0.content}".format(message))
         return
     
     # Ignore message from non-specified channels
@@ -95,16 +101,16 @@ async def on_message(message):
             logger.info("Time remaining for single pour: {0}".format(single_remaining_str))
             logger.info("Time remaining for full pour: {0}".format(fill_remaining_str))
             choose_time_remaining = single_remaining_str if is_pour_command else fill_remaining_str
-            await message.channel.send("Woah, woah, woah - slow down there, {0.author}!  {1} still has about {2} left before you can do that!".format(message, await getShotRecipient(), choose_time_remaining))
+            await message.channel.send("Woah, woah, woah - slow down there, {0.author.name}!  {1} still has about {2} left before you can do that!".format(message, await getShotRecipient(), choose_time_remaining))
             return
             
         if command_timer.isInProgress():
             logger.info("Haha, {0.author} wanted to pour {1} a shit, but ShotBot is still working on the last command".format(message, await getShotRecipient()))
-            await message.channel.send("Slow down there, {0.author} - I'm still working on pouring the last drink for {1}!".format(message, await getShotRecipient()))
+            await message.channel.send("Slow down there, {0.author.name} - I'm still working on pouring the last drink for {1}!".format(message, await getShotRecipient()))
             
         if command_timer.isUserLockSet():
             logger.info("User lockout is set, will not pour shot(s)")
-            await message.channel.send("Sorry, {0.author}!  Looks like {1} isn't ready for another one yet!".format(message, await getShotRecipient()))
+            await message.channel.send("Sorry, {0.author.name}!  Looks like {1} isn't ready for another one yet!".format(message, await getShotRecipient()))
             return
             
         command_timer.setInProgress()
@@ -120,11 +126,24 @@ async def on_message(message):
         command_timer.markProgressComplete()
         command_timer.resetTimers()
         
+    elif message.content == await getCommandFor("shutdown"):
+    
+        logger.info("{0.author} attempted to shutdown the bot client, that rascal!".format(message))
+        if message.author != await getShotRecipient():
+            logger.info("Shutdown did not come from {0}, so ignoring the command".format(await getShotRecipient()))
+            await message.channel.send("Wait - you're not {0}!  Sorry, only they can shutdown the bot using {1}.".format(await getShotRecipient().name, await getCommandFor()))
+            return
+        
+        logger.info("Registered as valid shutdown command, beginning now")
+        await message.channel.send("Roger roger, shutting down!  See ya!")
+        await client.close()
+        logger.info("Client closed!")
+        quit
+        
     elif message.content == await getCommandFor("help"):
         logger.info("{0.author} asked for help".format(message))
         help_message = ""
         help_dict = await getCommandHelp()
-        print(help_dict)
         for command, help_text in help_dict.items():
             help_message += "".join([command, ": ", help_text, "\n"])
         help_message += "".join(["\n", "Created by Tekktrik using Python"])
